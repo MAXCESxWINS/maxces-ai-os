@@ -127,13 +127,23 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+import { AuthProvider } from "../context/AuthContext";
+import { PermissionProvider } from "../context/PermissionContext";
+import { ToolPermissionProvider } from "../context/ToolPermissionContext";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <AuthProvider>
+        <PermissionProvider>
+          <ToolPermissionProvider>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </ToolPermissionProvider>
+        </PermissionProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

@@ -1,78 +1,187 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Brain, Pin, Search, Tag } from "lucide-react";
+import { useState, useMemo, useId } from "react";
+import { Brain, Search, Pin, Tag, Clock, Sparkles } from "lucide-react";
+import { motion } from "motion/react";
 import { GlassCard } from "@/components/maxces/GlassCard";
 import { TopBar } from "@/components/maxces/TopBar";
+import { EmptyState, SearchEmptyState, PageContainer } from "@/components/maxces/Primitives";
 
 export const Route = createFileRoute("/_app/memory")({
   head: () => ({ meta: [{ title: "MAXCES · Memory" }] }),
   component: MemoryPage,
 });
 
-const memories = [
-  { title: "Orbit CRM launch plan", tag: "Product", when: "Today", pinned: true, body: "Ship v1.4 Wed. Focus: billing edge cases + observability. Priya owns Slack alerts wiring." },
-  { title: "My writing style", tag: "Personal", when: "Yesterday", pinned: true, body: "Short sentences. Concrete verbs. Avoid 'in order to'. Never marketing fluff." },
-  { title: "Northwind schema", tag: "Data", when: "2d", body: "orders → order_items → products. Partitioned by month. Latency budget: 200ms p95." },
-  { title: "Design system tokens", tag: "Design", when: "3d", body: "Primary purple, cyan highlights. Radii scale 1x → 1.5x → 2x. Motion 220ms cubic." },
-  { title: "Meeting notes: Q3", tag: "Business", when: "1w", body: "Focus on retention. Cut two features. Hire ML eng in October." },
-  { title: "Book: The Timeless Way", tag: "Reading", when: "2w", body: "Pattern language. Quality without a name. Reread ch. 4 before starting Halo." },
+const MEMORIES = [
+  {
+    id: "m1",
+    title: "AI Product Design Principles",
+    body: "Premium AI products feel different through micro-interactions that acknowledge user intent. The best interfaces anticipate rather than react.",
+    tags: ["design", "AI"],
+    date: "Jul 18",
+    pinned: true,
+  },
+  {
+    id: "m2",
+    title: "Founder PM Notes",
+    body: "Ship small, validate fast. Never over-architect before market signal. The best products are discovered, not designed upfront.",
+    tags: ["strategy", "PM"],
+    date: "Jul 16",
+    pinned: false,
+  },
+  {
+    id: "m3",
+    title: "React Performance Patterns",
+    body: "useMemo + useCallback should solve re-render issues. Lazy load heavy components. Use React.memo for static leaf nodes.",
+    tags: ["react", "performance"],
+    date: "Jul 14",
+    pinned: false,
+  },
+  {
+    id: "m4",
+    title: "Glassmorphism Design System",
+    body: "oklch color space for vibrant dark themes. backdrop-filter: blur(24px) saturate(160%) for premium glass effect. Always add top highlight.",
+    tags: ["design", "css"],
+    date: "Jul 12",
+    pinned: true,
+  },
 ];
 
-function MemoryPage() {
+// Derive all unique tags from data (no random numbers in render)
+const ALL_TAGS = ["All", ...Array.from(new Set(MEMORIES.flatMap((m) => m.tags)))];
+const tagCounts: Record<string, number> = { All: MEMORIES.length };
+MEMORIES.forEach((m) => m.tags.forEach((t) => { tagCounts[t] = (tagCounts[t] || 0) + 1; }));
+
+export function MemoryPage() {
+  const [query, setQuery] = useState("");
+  const [activeTag, setActiveTag] = useState("All");
+  const searchId = useId();
+
+  const filtered = useMemo(() => {
+    let result = MEMORIES;
+    if (activeTag !== "All") result = result.filter((m) => m.tags.includes(activeTag));
+    if (query.trim()) {
+      const q = query.toLowerCase();
+      result = result.filter((m) => m.title.toLowerCase().includes(q) || m.body.toLowerCase().includes(q));
+    }
+    return result;
+  }, [query, activeTag]);
+
   return (
-    <div>
-      <TopBar title="Memory" subtitle="Your second brain" />
-      <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
-        <GlassCard className="h-fit">
-          <div className="mb-3 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm">
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <input placeholder="Search memory…" className="flex-1 bg-transparent outline-none" />
-          </div>
-          <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Tags</div>
-          <ul className="space-y-1 text-sm">
-            {["All", "Product", "Personal", "Data", "Design", "Business", "Reading"].map((t, i) => (
-              <li key={t} className={`flex items-center justify-between rounded-lg px-2.5 py-2 ${i === 0 ? "bg-white/5 text-foreground" : "text-muted-foreground hover:bg-white/5 hover:text-foreground"}`}>
-                <span className="flex items-center gap-2"><Tag className="h-3.5 w-3.5" />{t}</span>
-                <span className="text-[10px] text-muted-foreground/60">{i === 0 ? "48" : Math.floor(Math.random() * 9) + 2}</span>
-              </li>
-            ))}
-          </ul>
+    <PageContainer>
+      <TopBar title="Memory" subtitle="AI long-term context & knowledge base" />
 
-          <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.03] p-4">
-            <div className="mb-2 flex items-center gap-2 text-sm font-medium"><Brain className="h-4 w-4 text-cyan-glow" /> Knowledge graph</div>
-            <div className="relative h-32 overflow-hidden rounded-lg bg-black/40">
-              <svg viewBox="0 0 200 128" className="absolute inset-0 h-full w-full">
-                {[[40,40],[100,30],[160,50],[70,90],[130,95],[110,60]].map(([x,y],i) => (
-                  <g key={i}>
-                    <circle cx={x} cy={y} r={4 + (i%3)} fill="oklch(0.82 0.15 210)" opacity="0.9" />
-                    <circle cx={x} cy={y} r={10} fill="oklch(0.55 0.24 295)" opacity="0.2" />
-                  </g>
-                ))}
-                <path d="M40 40 L100 30 L160 50 L130 95 L70 90 Z M110 60 L100 30 M110 60 L130 95" stroke="oklch(1 0 0 / 20%)" fill="none" />
-              </svg>
-            </div>
-          </div>
-        </GlassCard>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          {memories.map((m) => (
-            <GlassCard key={m.title}>
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    {m.pinned && <Pin className="h-3.5 w-3.5 text-cyan-glow" />}
-                    <h3 className="truncate text-base font-semibold">{m.title}</h3>
-                  </div>
-                  <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
-                    <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5">{m.tag}</span>
-                    <span>{m.when}</span>
-                  </div>
-                </div>
+      <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
+        {/* Left Sidebar */}
+        <aside aria-label="Memory filters">
+          <GlassCard hover={false}>
+            {/* Search */}
+            <div className="mb-4">
+              <label htmlFor={searchId} className="sr-only">Search memories</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" aria-hidden />
+                <input
+                  id={searchId}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search memories…"
+                  type="search"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 pl-9 pr-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-purple-500/60"
+                />
               </div>
-              <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{m.body}</p>
-            </GlassCard>
-          ))}
-        </div>
+            </div>
+
+            {/* Tag Filters */}
+            <div>
+              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-2">Filter by tag</p>
+              <ul role="listbox" aria-label="Filter memories by tag" className="space-y-1">
+                {ALL_TAGS.map((tag) => (
+                  <li key={tag} role="option" aria-selected={activeTag === tag}>
+                    <button
+                      onClick={() => setActiveTag(tag)}
+                      className={`w-full flex items-center justify-between rounded-xl px-3 py-2 text-xs transition-all ${
+                        activeTag === tag
+                          ? "bg-purple-500/15 border border-purple-500/30 text-purple-200"
+                          : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                      }`}
+                      aria-label={`Filter by ${tag} (${tagCounts[tag] ?? 0} items)`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Tag className="h-3 w-3" aria-hidden />
+                        {tag}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground/60">{tagCounts[tag] ?? 0}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Stats */}
+            <div className="mt-5 pt-4 border-t border-white/8">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Brain className="h-3.5 w-3.5 text-purple-400" aria-hidden />
+                <span>{MEMORIES.length} total memories</span>
+              </div>
+            </div>
+          </GlassCard>
+        </aside>
+
+        {/* Memory Cards */}
+        <main aria-label="Memory results" aria-live="polite">
+          {filtered.length === 0 ? (
+            query ? (
+              <SearchEmptyState query={query} />
+            ) : (
+              <EmptyState
+                icon={<Brain className="h-6 w-6" />}
+                title="No memories in this tag"
+                description="Switch to 'All' or create new memories from your AI conversations."
+              />
+            )
+          ) : (
+            <div className="space-y-4">
+              {filtered.map((mem, i) => (
+                <motion.div
+                  key={mem.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: i * 0.06 }}
+                >
+                  <GlassCard className={mem.pinned ? "border border-purple-500/20" : ""}>
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {mem.pinned && (
+                          <Pin className="h-3.5 w-3.5 text-purple-400 shrink-0" aria-label="Pinned memory" />
+                        )}
+                        <h3 className="font-semibold text-foreground text-sm truncate">{mem.title}</h3>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0 text-[10px] text-muted-foreground">
+                        <Clock className="h-3 w-3" aria-hidden />
+                        <time dateTime={mem.date}>{mem.date}</time>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-3">{mem.body}</p>
+
+                    <div className="flex flex-wrap gap-1.5" role="list" aria-label="Tags">
+                      {mem.tags.map((t) => (
+                        <span
+                          key={t}
+                          role="listitem"
+                          className="inline-flex items-center gap-1 rounded-lg border border-purple-500/20 bg-purple-500/8 px-2 py-0.5 text-[10px] font-medium text-purple-300"
+                        >
+                          <Sparkles className="h-2.5 w-2.5" aria-hidden />
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </GlassCard>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </main>
       </div>
-    </div>
+    </PageContainer>
   );
 }

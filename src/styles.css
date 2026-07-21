@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap");
+
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
@@ -124,6 +126,7 @@
 @layer base {
   * {
     border-color: var(--color-border);
+    -webkit-tap-highlight-color: transparent;
   }
 
   html,
@@ -133,6 +136,8 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
@@ -149,6 +154,22 @@
   h4 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
+  }
+
+  /* Keyboard focus rings — WCAG AA, visible only on keyboard nav */
+  :focus-visible {
+    outline: 2px solid oklch(0.55 0.24 295 / 70%);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  ::selection {
+    background: oklch(0.55 0.24 295 / 35%);
+    color: oklch(0.99 0.005 250);
   }
 }
 
@@ -217,78 +238,62 @@
   }
 }
 
+/* ————— Animations ————— */
+
 @keyframes aurora-shift {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(2%, -3%, 0) scale(1.08);
-  }
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%       { transform: translate3d(2%, -3%, 0) scale(1.08); }
 }
-
 @keyframes float-slow {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
 }
-
 @keyframes pulse-ring {
-  0% {
-    transform: scale(0.9);
-    opacity: 0.9;
-  }
-  70% {
-    transform: scale(1.6);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1.6);
-    opacity: 0;
-  }
+  0%   { transform: scale(0.9); opacity: 0.9; }
+  70%  { transform: scale(1.6); opacity: 0; }
+  100% { transform: scale(1.6); opacity: 0; }
 }
-
 @keyframes shimmer {
-  0% {
-    background-position: -400% 0;
-  }
-  100% {
-    background-position: 400% 0;
-  }
+  0%   { background-position: -400% 0; }
+  100% { background-position:  400% 0; }
 }
-
 @keyframes orb-rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes skeleton-wave {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes dot-bounce {
+  0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
+  40%           { transform: scale(1); opacity: 1; }
+}
+@keyframes progress-indeterminate {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 
-@utility animate-aurora {
-  animation: aurora-shift 22s ease-in-out infinite;
-}
-
-@utility animate-float-slow {
-  animation: float-slow 6s ease-in-out infinite;
-}
-
-@utility animate-pulse-ring {
-  animation: pulse-ring 3s cubic-bezier(0.19, 1, 0.22, 1) infinite;
-}
-
-@utility animate-orb-rotate-slow {
-  animation: orb-rotate 40s linear infinite;
-}
-
-@utility animate-orb-rotate-fast {
-  animation: orb-rotate 18s linear infinite reverse;
-}
+@utility animate-aurora           { animation: aurora-shift 22s ease-in-out infinite; }
+@utility animate-float-slow       { animation: float-slow 6s ease-in-out infinite; }
+@utility animate-pulse-ring       { animation: pulse-ring 3s cubic-bezier(0.19, 1, 0.22, 1) infinite; }
+@utility animate-orb-rotate-slow  { animation: orb-rotate 40s linear infinite; }
+@utility animate-orb-rotate-fast  { animation: orb-rotate 18s linear infinite reverse; }
+@utility animate-fade-in-up       { animation: fade-in-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@utility animate-fade-in          { animation: fade-in 0.3s ease both; }
+@utility animate-slide-in-right   { animation: slide-in-right 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
 @utility shimmer-text {
   background: linear-gradient(
@@ -304,18 +309,55 @@
   animation: shimmer 4s linear infinite;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+@utility skeleton {
+  background: linear-gradient(
+    90deg,
+    oklch(1 0 0 / 4%)  0%,
+    oklch(1 0 0 / 9%)  30%,
+    oklch(1 0 0 / 4%)  60%,
+    oklch(1 0 0 / 9%)  100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-wave 1.8s ease-in-out infinite;
+  border-radius: var(--radius-md);
 }
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
+
+@utility progress-bar {
+  position: relative;
+  overflow: hidden;
   background: oklch(1 0 0 / 8%);
   border-radius: 999px;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, oklch(0.55 0.24 295 / 60%), transparent);
+    animation: progress-indeterminate 1.5s ease-in-out infinite;
+  }
 }
-::-webkit-scrollbar-thumb:hover {
-  background: oklch(1 0 0 / 14%);
+
+/* Scrollbar — thin and refined */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: oklch(1 0 0 / 10%); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: oklch(1 0 0 / 18%); }
+
+/* Input focus glow — consistent */
+input:focus, textarea:focus, select:focus {
+  box-shadow: 0 0 0 3px oklch(0.55 0.24 295 / 20%);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Mobile padding fix */
+@media (max-width: 640px) {
+  main { padding-left: 1rem !important; padding-right: 1rem !important; }
 }

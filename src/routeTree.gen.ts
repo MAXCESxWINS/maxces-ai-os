@@ -10,25 +10,33 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
-import { Route as AppWebsiteReviewRouteImport } from './routes/_app.website-review'
-import { Route as AppUiReviewRouteImport } from './routes/_app.ui-review'
-import { Route as AppTimelineRouteImport } from './routes/_app.timeline'
-import { Route as AppTasksRouteImport } from './routes/_app.tasks'
-import { Route as AppSettingsRouteImport } from './routes/_app.settings'
-import { Route as AppResearchRouteImport } from './routes/_app.research'
-import { Route as AppPromptStudioRouteImport } from './routes/_app.prompt-studio'
-import { Route as AppProjectsRouteImport } from './routes/_app.projects'
-import { Route as AppProfileRouteImport } from './routes/_app.profile'
-import { Route as AppMemoryRouteImport } from './routes/_app.memory'
-import { Route as AppFilesRouteImport } from './routes/_app.files'
-import { Route as AppCodeBuilderRouteImport } from './routes/_app.code-builder'
-import { Route as AppChatRouteImport } from './routes/_app.chat'
-import { Route as AppBusinessRouteImport } from './routes/_app.business'
 import { Route as AppAnalyticsRouteImport } from './routes/_app.analytics'
+import { Route as AppBusinessRouteImport } from './routes/_app.business'
+import { Route as AppChatRouteImport } from './routes/_app.chat'
+import { Route as AppCodeBuilderRouteImport } from './routes/_app.code-builder'
+import { Route as AppDeployRouteImport } from './routes/_app.deploy'
+import { Route as AppFilesRouteImport } from './routes/_app.files'
+import { Route as AppGithubRouteImport } from './routes/_app.github'
+import { Route as AppMemoryRouteImport } from './routes/_app.memory'
+import { Route as AppProfileRouteImport } from './routes/_app.profile'
+import { Route as AppProjectsRouteImport } from './routes/_app.projects'
+import { Route as AppPromptStudioRouteImport } from './routes/_app.prompt-studio'
+import { Route as AppResearchRouteImport } from './routes/_app.research'
+import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppTasksRouteImport } from './routes/_app.tasks'
+import { Route as AppTimelineRouteImport } from './routes/_app.timeline'
+import { Route as AppUiReviewRouteImport } from './routes/_app.ui-review'
+import { Route as AppWebsiteReviewRouteImport } from './routes/_app.website-review'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
@@ -36,69 +44,9 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
-const AppWebsiteReviewRoute = AppWebsiteReviewRouteImport.update({
-  id: '/website-review',
-  path: '/website-review',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppUiReviewRoute = AppUiReviewRouteImport.update({
-  id: '/ui-review',
-  path: '/ui-review',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppTimelineRoute = AppTimelineRouteImport.update({
-  id: '/timeline',
-  path: '/timeline',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppTasksRoute = AppTasksRouteImport.update({
-  id: '/tasks',
-  path: '/tasks',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppSettingsRoute = AppSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppResearchRoute = AppResearchRouteImport.update({
-  id: '/research',
-  path: '/research',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPromptStudioRoute = AppPromptStudioRouteImport.update({
-  id: '/prompt-studio',
-  path: '/prompt-studio',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppProjectsRoute = AppProjectsRouteImport.update({
-  id: '/projects',
-  path: '/projects',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppProfileRoute = AppProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppMemoryRoute = AppMemoryRouteImport.update({
-  id: '/memory',
-  path: '/memory',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppFilesRoute = AppFilesRouteImport.update({
-  id: '/files',
-  path: '/files',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCodeBuilderRoute = AppCodeBuilderRouteImport.update({
-  id: '/code-builder',
-  path: '/code-builder',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppChatRoute = AppChatRouteImport.update({
-  id: '/chat',
-  path: '/chat',
+const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => AppRoute,
 } as any)
 const AppBusinessRoute = AppBusinessRouteImport.update({
@@ -106,19 +54,92 @@ const AppBusinessRoute = AppBusinessRouteImport.update({
   path: '/business',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
+const AppChatRoute = AppChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCodeBuilderRoute = AppCodeBuilderRouteImport.update({
+  id: '/code-builder',
+  path: '/code-builder',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDeployRoute = AppDeployRouteImport.update({
+  id: '/deploy',
+  path: '/deploy',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFilesRoute = AppFilesRouteImport.update({
+  id: '/files',
+  path: '/files',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGithubRoute = AppGithubRouteImport.update({
+  id: '/github',
+  path: '/github',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMemoryRoute = AppMemoryRouteImport.update({
+  id: '/memory',
+  path: '/memory',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProjectsRoute = AppProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPromptStudioRoute = AppPromptStudioRouteImport.update({
+  id: '/prompt-studio',
+  path: '/prompt-studio',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppResearchRoute = AppResearchRouteImport.update({
+  id: '/research',
+  path: '/research',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTasksRoute = AppTasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTimelineRoute = AppTimelineRouteImport.update({
+  id: '/timeline',
+  path: '/timeline',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUiReviewRoute = AppUiReviewRouteImport.update({
+  id: '/ui-review',
+  path: '/ui-review',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWebsiteReviewRoute = AppWebsiteReviewRouteImport.update({
+  id: '/website-review',
+  path: '/website-review',
   getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/login': typeof LoginRoute
   '/analytics': typeof AppAnalyticsRoute
   '/business': typeof AppBusinessRoute
   '/chat': typeof AppChatRoute
   '/code-builder': typeof AppCodeBuilderRoute
+  '/deploy': typeof AppDeployRoute
   '/files': typeof AppFilesRoute
+  '/github': typeof AppGithubRoute
   '/memory': typeof AppMemoryRoute
   '/profile': typeof AppProfileRoute
   '/projects': typeof AppProjectsRoute
@@ -131,11 +152,14 @@ export interface FileRoutesByFullPath {
   '/website-review': typeof AppWebsiteReviewRoute
 }
 export interface FileRoutesByTo {
+  '/login': typeof LoginRoute
   '/analytics': typeof AppAnalyticsRoute
   '/business': typeof AppBusinessRoute
   '/chat': typeof AppChatRoute
   '/code-builder': typeof AppCodeBuilderRoute
+  '/deploy': typeof AppDeployRoute
   '/files': typeof AppFilesRoute
+  '/github': typeof AppGithubRoute
   '/memory': typeof AppMemoryRoute
   '/profile': typeof AppProfileRoute
   '/projects': typeof AppProjectsRoute
@@ -151,11 +175,14 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/login': typeof LoginRoute
   '/_app/analytics': typeof AppAnalyticsRoute
   '/_app/business': typeof AppBusinessRoute
   '/_app/chat': typeof AppChatRoute
   '/_app/code-builder': typeof AppCodeBuilderRoute
+  '/_app/deploy': typeof AppDeployRoute
   '/_app/files': typeof AppFilesRoute
+  '/_app/github': typeof AppGithubRoute
   '/_app/memory': typeof AppMemoryRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/projects': typeof AppProjectsRoute
@@ -172,11 +199,14 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/login'
     | '/analytics'
     | '/business'
     | '/chat'
     | '/code-builder'
+    | '/deploy'
     | '/files'
+    | '/github'
     | '/memory'
     | '/profile'
     | '/projects'
@@ -189,11 +219,14 @@ export interface FileRouteTypes {
     | '/website-review'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/login'
     | '/analytics'
     | '/business'
     | '/chat'
     | '/code-builder'
+    | '/deploy'
     | '/files'
+    | '/github'
     | '/memory'
     | '/profile'
     | '/projects'
@@ -208,11 +241,14 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_app'
+    | '/login'
     | '/_app/analytics'
     | '/_app/business'
     | '/_app/chat'
     | '/_app/code-builder'
+    | '/_app/deploy'
     | '/_app/files'
+    | '/_app/github'
     | '/_app/memory'
     | '/_app/profile'
     | '/_app/projects'
@@ -228,6 +264,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
+  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -239,6 +276,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/': {
       id: '/_app/'
       path: '/'
@@ -246,95 +290,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/website-review': {
-      id: '/_app/website-review'
-      path: '/website-review'
-      fullPath: '/website-review'
-      preLoaderRoute: typeof AppWebsiteReviewRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/ui-review': {
-      id: '/_app/ui-review'
-      path: '/ui-review'
-      fullPath: '/ui-review'
-      preLoaderRoute: typeof AppUiReviewRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/timeline': {
-      id: '/_app/timeline'
-      path: '/timeline'
-      fullPath: '/timeline'
-      preLoaderRoute: typeof AppTimelineRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/tasks': {
-      id: '/_app/tasks'
-      path: '/tasks'
-      fullPath: '/tasks'
-      preLoaderRoute: typeof AppTasksRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/settings': {
-      id: '/_app/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AppSettingsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/research': {
-      id: '/_app/research'
-      path: '/research'
-      fullPath: '/research'
-      preLoaderRoute: typeof AppResearchRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/prompt-studio': {
-      id: '/_app/prompt-studio'
-      path: '/prompt-studio'
-      fullPath: '/prompt-studio'
-      preLoaderRoute: typeof AppPromptStudioRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/projects': {
-      id: '/_app/projects'
-      path: '/projects'
-      fullPath: '/projects'
-      preLoaderRoute: typeof AppProjectsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/profile': {
-      id: '/_app/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof AppProfileRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/memory': {
-      id: '/_app/memory'
-      path: '/memory'
-      fullPath: '/memory'
-      preLoaderRoute: typeof AppMemoryRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/files': {
-      id: '/_app/files'
-      path: '/files'
-      fullPath: '/files'
-      preLoaderRoute: typeof AppFilesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/code-builder': {
-      id: '/_app/code-builder'
-      path: '/code-builder'
-      fullPath: '/code-builder'
-      preLoaderRoute: typeof AppCodeBuilderRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/chat': {
-      id: '/_app/chat'
-      path: '/chat'
-      fullPath: '/chat'
-      preLoaderRoute: typeof AppChatRouteImport
+    '/_app/analytics': {
+      id: '/_app/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AppAnalyticsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/business': {
@@ -344,11 +304,109 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBusinessRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/analytics': {
-      id: '/_app/analytics'
-      path: '/analytics'
-      fullPath: '/analytics'
-      preLoaderRoute: typeof AppAnalyticsRouteImport
+    '/_app/chat': {
+      id: '/_app/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof AppChatRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/code-builder': {
+      id: '/_app/code-builder'
+      path: '/code-builder'
+      fullPath: '/code-builder'
+      preLoaderRoute: typeof AppCodeBuilderRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/deploy': {
+      id: '/_app/deploy'
+      path: '/deploy'
+      fullPath: '/deploy'
+      preLoaderRoute: typeof AppDeployRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/files': {
+      id: '/_app/files'
+      path: '/files'
+      fullPath: '/files'
+      preLoaderRoute: typeof AppFilesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/github': {
+      id: '/_app/github'
+      path: '/github'
+      fullPath: '/github'
+      preLoaderRoute: typeof AppGithubRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/memory': {
+      id: '/_app/memory'
+      path: '/memory'
+      fullPath: '/memory'
+      preLoaderRoute: typeof AppMemoryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profile': {
+      id: '/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/projects': {
+      id: '/_app/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof AppProjectsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/prompt-studio': {
+      id: '/_app/prompt-studio'
+      path: '/prompt-studio'
+      fullPath: '/prompt-studio'
+      preLoaderRoute: typeof AppPromptStudioRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/research': {
+      id: '/_app/research'
+      path: '/research'
+      fullPath: '/research'
+      preLoaderRoute: typeof AppResearchRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/tasks': {
+      id: '/_app/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof AppTasksRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/timeline': {
+      id: '/_app/timeline'
+      path: '/timeline'
+      fullPath: '/timeline'
+      preLoaderRoute: typeof AppTimelineRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/ui-review': {
+      id: '/_app/ui-review'
+      path: '/ui-review'
+      fullPath: '/ui-review'
+      preLoaderRoute: typeof AppUiReviewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/website-review': {
+      id: '/_app/website-review'
+      path: '/website-review'
+      fullPath: '/website-review'
+      preLoaderRoute: typeof AppWebsiteReviewRouteImport
       parentRoute: typeof AppRoute
     }
   }
@@ -359,7 +417,9 @@ interface AppRouteChildren {
   AppBusinessRoute: typeof AppBusinessRoute
   AppChatRoute: typeof AppChatRoute
   AppCodeBuilderRoute: typeof AppCodeBuilderRoute
+  AppDeployRoute: typeof AppDeployRoute
   AppFilesRoute: typeof AppFilesRoute
+  AppGithubRoute: typeof AppGithubRoute
   AppMemoryRoute: typeof AppMemoryRoute
   AppProfileRoute: typeof AppProfileRoute
   AppProjectsRoute: typeof AppProjectsRoute
@@ -378,7 +438,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppBusinessRoute: AppBusinessRoute,
   AppChatRoute: AppChatRoute,
   AppCodeBuilderRoute: AppCodeBuilderRoute,
+  AppDeployRoute: AppDeployRoute,
   AppFilesRoute: AppFilesRoute,
+  AppGithubRoute: AppGithubRoute,
   AppMemoryRoute: AppMemoryRoute,
   AppProfileRoute: AppProfileRoute,
   AppProjectsRoute: AppProjectsRoute,
@@ -396,7 +458,18 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

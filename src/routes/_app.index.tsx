@@ -1,18 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import {
   ArrowUpRight,
   Sparkles,
   TrendingUp,
-  Clock,
   CheckCircle2,
   Code2,
-  Palette,
   Globe,
   Brain,
   Wand2,
   Rocket,
   Activity,
+  Github,
+  Cloud,
+  Keyboard,
 } from "lucide-react";
 import {
   Area,
@@ -22,9 +23,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useState, useEffect } from "react";
 import { AICore } from "@/components/maxces/AICore";
 import { GlassCard } from "@/components/maxces/GlassCard";
 import { TopBar } from "@/components/maxces/TopBar";
+import { OnboardingBanner, KeyboardShortcutsModal, StatusDot, PageContainer } from "@/components/maxces/Primitives";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/_app/")({
   head: () => ({
@@ -41,10 +45,10 @@ export const Route = createFileRoute("/_app/")({
 });
 
 const stats = [
-  { label: "Active Projects", value: "14", delta: "+3", icon: Rocket, tone: "primary" as const },
+  { label: "Active Projects", value: "14", delta: "+3 this week", icon: Rocket, tone: "primary" as const },
   { label: "Tasks Today", value: "9", delta: "6 done", icon: CheckCircle2, tone: "success" as const },
   { label: "AI Requests", value: "2,481", delta: "+18%", icon: Sparkles, tone: "cyan" as const },
-  { label: "Focus Score", value: "94", delta: "+6", icon: TrendingUp, tone: "warning" as const },
+  { label: "Focus Score", value: "94", delta: "+6 pts", icon: TrendingUp, tone: "warning" as const },
 ];
 
 const productivity = [
@@ -58,291 +62,252 @@ const productivity = [
 ];
 
 const projects = [
-  {
-    name: "Orbit CRM",
-    tag: "Web · Realtime",
-    progress: 78,
-    health: "Excellent",
-    color: "from-primary to-secondary",
-  },
-  {
-    name: "Halo Editor",
-    tag: "Desktop · AI",
-    progress: 42,
-    health: "On track",
-    color: "from-secondary to-cyan-glow",
-  },
-  {
-    name: "Northwind Analytics",
-    tag: "Dashboard · BI",
-    progress: 91,
-    health: "Ship-ready",
-    color: "from-cyan-glow to-primary",
-  },
+  { name: "MAXCES AI OS", status: "active", progress: 78, lang: "React" },
+  { name: "Orbit CRM", status: "active", progress: 42, lang: "Next.js" },
+  { name: "HaloEditor", status: "building", progress: 23, lang: "Vite" },
+  { name: "Cortex SDK", status: "shipped", progress: 100, lang: "TypeScript" },
 ];
 
-const quickActions = [
-  { icon: Wand2, label: "New Prompt", to: "/prompt-studio" },
-  { icon: Code2, label: "Build Code", to: "/code-builder" },
-  { icon: Globe, label: "Review Site", to: "/website-review" },
-  { icon: Palette, label: "Review UI", to: "/ui-review" },
-  { icon: Brain, label: "Save Memory", to: "/memory" },
-  { icon: Activity, label: "Analytics", to: "/analytics" },
+const quickLinks = [
+  { to: "/code-builder", label: "Code Builder", icon: Code2, desc: "Generate luxury React code", color: "from-purple-500/20 to-indigo-500/10" },
+  { to: "/website-review", label: "Website Review", icon: Globe, desc: "Analyze any live URL", color: "from-cyan-500/20 to-blue-500/10" },
+  { to: "/prompt-studio", label: "Prompt Studio", icon: Wand2, desc: "Craft premium AI prompts", color: "from-amber-500/20 to-orange-500/10" },
+  { to: "/github", label: "GitHub Push", icon: Github, desc: "Safe feature branch deploy", color: "from-slate-500/20 to-slate-600/10" },
+  { to: "/deploy", label: "Deploy Live", icon: Cloud, desc: "Vercel & Netlify in 1 click", color: "from-emerald-500/20 to-teal-500/10" },
+  { to: "/memory", label: "Memory", icon: Brain, desc: "Long-term AI context", color: "from-pink-500/20 to-rose-500/10" },
 ];
 
-function DashboardPage() {
+const toneStyles: Record<string, string> = {
+  primary: "text-purple-400 bg-purple-500/10",
+  success: "text-emerald-400 bg-emerald-500/10",
+  cyan: "text-cyan-400 bg-cyan-500/10",
+  warning: "text-amber-400 bg-amber-500/10",
+};
+
+const statusColors: Record<string, "green" | "blue" | "gray"> = {
+  active: "green",
+  building: "blue",
+  shipped: "gray",
+};
+
+const ONBOARDING_KEY = "maxces_onboarding_dismissed";
+
+export function DashboardPage() {
+  const { user } = useAuth();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+
+  const displayName =
+    (user as { user_metadata?: { full_name?: string; name?: string } })?.user_metadata?.full_name ||
+    (user as { user_metadata?: { name?: string } })?.user_metadata?.name ||
+    user?.email?.split("@")[0] ||
+    undefined;
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem(ONBOARDING_KEY);
+    if (!dismissed) setShowOnboarding(true);
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "/") {
+        e.preventDefault();
+        setShowShortcuts((v) => !v);
+      }
+      if (e.key === "Escape") setShowShortcuts(false);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  const handleDismissOnboarding = () => {
+    localStorage.setItem(ONBOARDING_KEY, "1");
+    setShowOnboarding(false);
+  };
+
   return (
-    <div>
+    <PageContainer>
       <TopBar
         title="Dashboard"
-        subtitle="Good evening, Alex"
+        subtitle="AI Operating System"
+        actions={
+          <button
+            onClick={() => setShowShortcuts(true)}
+            aria-label="Show keyboard shortcuts"
+            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
+          >
+            <Keyboard className="h-3.5 w-3.5" aria-hidden />
+            Shortcuts
+            <kbd className="rounded border border-white/10 bg-black/30 px-1 py-0.5 text-[9px] font-mono">⌘/</kbd>
+          </button>
+        }
       />
 
-      {/* Hero */}
-      <GlassCard hover={false} className="relative overflow-hidden p-0">
-        <div className="grid grid-cols-1 gap-8 p-8 lg:grid-cols-[1.2fr_1fr] lg:p-12">
-          <div className="flex flex-col justify-center">
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-cyan-glow">
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan-glow shadow-[0_0_10px_var(--cyan-glow)]" />
-              Cortex online
-            </div>
-            <h2 className="mt-4 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
-              <span className="text-gradient">The control room</span>
-              <br />
-              <span className="shimmer-text">of your intelligence.</span>
-            </h2>
-            <p className="mt-4 max-w-xl text-sm text-muted-foreground sm:text-base">
-              MAXCES is ready. Nine tasks queued for today, three projects near
-              ship, and 14 memories synced. Shall we begin?
-            </p>
+      {/* Onboarding Banner */}
+      <AnimatePresence>
+        {showOnboarding && (
+          <OnboardingBanner username={displayName} onDismiss={handleDismissOnboarding} />
+        )}
+      </AnimatePresence>
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                to="/chat"
-                className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-secondary px-5 py-3 text-sm font-medium text-primary-foreground shadow-xl shadow-primary/30 transition-transform hover:scale-[1.02]"
-              >
-                <Sparkles className="h-4 w-4" />
-                Start a conversation
-                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </Link>
-              <Link
-                to="/projects"
-                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-foreground transition-colors hover:bg-white/10"
-              >
-                View projects
-              </Link>
-            </div>
-          </div>
-
-          <div className="relative grid place-items-center">
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 blur-2xl" />
-            <AICore size={300} label="Cortex · Ready" />
-          </div>
-        </div>
-      </GlassCard>
-
-      {/* Stats */}
-      <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      {/* Stats Row */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 mb-6" role="region" aria-label="Overview statistics">
         {stats.map((s, i) => (
           <motion.div
             key={s.label}
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.06 }}
+            transition={{ duration: 0.4, delay: i * 0.07, ease: [0.16, 1, 0.3, 1] }}
           >
-            <GlassCard>
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                    {s.label}
-                  </div>
-                  <div className="mt-2 text-3xl font-semibold tracking-tight">
-                    {s.value}
-                  </div>
-                  <div className="mt-1 text-xs text-success">{s.delta}</div>
+            <GlassCard hover={false} className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className={`grid h-8 w-8 place-items-center rounded-xl ${toneStyles[s.tone]}`}>
+                  <s.icon className="h-4 w-4" aria-hidden />
                 </div>
-                <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/5 ring-1 ring-white/10">
-                  <s.icon className="h-4 w-4 text-cyan-glow" />
-                </div>
+                <span className="text-[10px] font-medium text-muted-foreground/80 flex items-center gap-1">
+                  <Activity className="h-3 w-3" aria-hidden /> {s.delta}
+                </span>
               </div>
+              <p className="text-2xl font-bold tracking-tight text-foreground">{s.value}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
             </GlassCard>
           </motion.div>
         ))}
       </div>
 
-      {/* Main grid */}
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Productivity */}
-        <GlassCard className="lg:col-span-2">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                Weekly productivity
-              </div>
-              <div className="mt-1 text-xl font-semibold">Peak flow this Sunday</div>
+      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+        {/* Left Column */}
+        <div className="space-y-6 min-w-0">
+          {/* Quick Actions */}
+          <section aria-labelledby="quick-actions-heading">
+            <h2 id="quick-actions-heading" className="sr-only">Quick Actions</h2>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {quickLinks.map((ql, i) => (
+                <motion.div
+                  key={ql.to}
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.35, delay: 0.15 + i * 0.05, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <Link to={ql.to} aria-label={`Go to ${ql.label}`}>
+                    <div className={`group relative overflow-hidden rounded-2xl border border-white/8 bg-gradient-to-br ${ql.color} p-4 hover:border-white/15 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg cursor-pointer`}>
+                      <div className="mb-3">
+                        <div className="h-8 w-8 rounded-xl bg-white/8 grid place-items-center group-hover:bg-white/12 transition-colors">
+                          <ql.icon className="h-4 w-4 text-foreground" aria-hidden />
+                        </div>
+                      </div>
+                      <p className="text-sm font-semibold text-foreground leading-tight">{ql.label}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{ql.desc}</p>
+                      <ArrowUpRight className="absolute right-3 top-3 h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" aria-hidden />
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
             </div>
-            <div className="text-xs text-muted-foreground">Last 7 days</div>
-          </div>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={productivity}>
+          </section>
+
+          {/* AI Core */}
+          <section aria-labelledby="ai-core-heading">
+            <h2 id="ai-core-heading" className="sr-only">AI Assistant</h2>
+            <AICore />
+          </section>
+
+          {/* Productivity Chart */}
+          <GlassCard hover={false}>
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="font-semibold text-foreground text-sm">Productivity Pulse</h2>
+                <p className="text-xs text-muted-foreground">Tasks completed per day</p>
+              </div>
+              <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 text-[10px] font-semibold text-emerald-400">
+                +23% this week
+              </span>
+            </div>
+            <ResponsiveContainer width="100%" height={120}>
+              <AreaChart data={productivity} margin={{ top: 4, right: 0, bottom: 0, left: -30 }}>
                 <defs>
-                  <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="oklch(0.55 0.24 295)" stopOpacity={0.6} />
-                    <stop offset="100%" stopColor="oklch(0.55 0.24 295)" stopOpacity={0} />
+                  <linearGradient id="prodGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="oklch(0.55 0.24 295)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="oklch(0.55 0.24 295)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="d" tickLine={false} axisLine={false} tick={{ fill: "oklch(0.68 0.02 260)", fontSize: 11 }} />
-                <YAxis hide />
+                <XAxis dataKey="d" tick={{ fontSize: 10, fill: "oklch(0.68 0.02 260)" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: "oklch(0.68 0.02 260)" }} axisLine={false} tickLine={false} />
                 <Tooltip
-                  cursor={{ stroke: "oklch(1 0 0 / 20%)" }}
-                  contentStyle={{
-                    background: "oklch(0.1 0.014 280 / 95%)",
-                    border: "1px solid oklch(1 0 0 / 10%)",
-                    borderRadius: 12,
-                    color: "white",
-                  }}
+                  contentStyle={{ background: "oklch(0.09 0.012 280)", border: "1px solid oklch(1 0 0 / 8%)", borderRadius: "12px", fontSize: "11px", color: "oklch(0.985 0.003 250)" }}
+                  cursor={{ stroke: "oklch(1 0 0 / 12%)" }}
                 />
-                <Area
-                  type="monotone"
-                  dataKey="v"
-                  stroke="oklch(0.82 0.15 210)"
-                  strokeWidth={2.5}
-                  fill="url(#grad)"
-                />
+                <Area type="monotone" dataKey="v" stroke="oklch(0.55 0.24 295)" strokeWidth={2} fill="url(#prodGrad)" />
               </AreaChart>
             </ResponsiveContainer>
-          </div>
-        </GlassCard>
+          </GlassCard>
+        </div>
 
-        {/* Today's plan */}
-        <GlassCard>
-          <div className="mb-4 flex items-center justify-between">
-            <div className="text-xl font-semibold">Today</div>
-            <div className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">
-              6 / 9
+        {/* Right Column */}
+        <div className="space-y-5">
+          {/* Projects */}
+          <GlassCard hover={false}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-foreground">Active Projects</h2>
+              <Link to="/projects" className="text-xs text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1" aria-label="View all projects">
+                View all <ArrowUpRight className="h-3 w-3" aria-hidden />
+              </Link>
             </div>
-          </div>
-          <ul className="space-y-3">
-            {[
-              { t: "Ship Orbit CRM v1.4", time: "10:00", done: true },
-              { t: "Review Halo UI direction", time: "12:30", done: true },
-              { t: "Deep work · Northwind API", time: "14:00", done: false },
-              { t: "1:1 with Priya", time: "16:00", done: false },
-              { t: "Weekly retro", time: "17:30", done: false },
-            ].map((t) => (
-              <li
-                key={t.t}
-                className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-3"
-              >
-                <span
-                  className={`grid h-6 w-6 shrink-0 place-items-center rounded-full ring-1 ring-inset ${t.done ? "bg-success/20 ring-success/40" : "bg-white/5 ring-white/10"}`}
-                >
-                  {t.done && <CheckCircle2 className="h-3.5 w-3.5 text-success" />}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className={`truncate text-sm ${t.done ? "text-muted-foreground line-through" : "text-foreground"}`}>
-                    {t.t}
-                  </div>
-                </div>
-                <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                  <Clock className="h-3 w-3" />
-                  {t.time}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </GlassCard>
-      </div>
-
-      {/* Projects + suggestions */}
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <GlassCard className="lg:col-span-2">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="text-xl font-semibold">Active projects</div>
-            <Link to="/projects" className="text-xs text-cyan-glow hover:underline">
-              View all →
-            </Link>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {projects.map((p) => (
-              <motion.div
-                key={p.name}
-                whileHover={{ y: -4 }}
-                className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-4"
-              >
-                <div className={`absolute -top-16 -right-16 h-40 w-40 rounded-full bg-gradient-to-br ${p.color} opacity-30 blur-3xl transition-opacity group-hover:opacity-60`} />
-                <div className="relative">
-                  <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                    {p.tag}
-                  </div>
-                  <div className="mt-1 text-lg font-semibold">{p.name}</div>
-                  <div className="mt-4">
-                    <div className="mb-1 flex items-center justify-between text-[11px] text-muted-foreground">
-                      <span>Progress</span>
-                      <span className="text-foreground">{p.progress}%</span>
+            <ul className="space-y-3" role="list">
+              {projects.map((p) => (
+                <li key={p.name} className="flex items-center gap-3">
+                  <StatusDot color={statusColors[p.status]} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-foreground truncate">{p.name}</span>
+                      <span className="text-[10px] text-muted-foreground shrink-0 ml-2">{p.progress}%</span>
                     </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-white/5">
-                      <div
-                        className={`h-full rounded-full bg-gradient-to-r ${p.color}`}
-                        style={{ width: `${p.progress}%` }}
+                    <div className="h-1 rounded-full bg-white/8 overflow-hidden" role="progressbar" aria-valuenow={p.progress} aria-valuemin={0} aria-valuemax={100} aria-label={`${p.name} progress`}>
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${p.progress}%` }}
+                        transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        className={`h-full rounded-full ${p.progress === 100 ? "bg-emerald-400" : "bg-gradient-to-r from-purple-500 to-cyan-400"}`}
                       />
                     </div>
+                    <span className="text-[9px] text-muted-foreground/60 mt-0.5 block">{p.lang}</span>
                   </div>
-                  <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-success">
-                    <span className="h-1 w-1 rounded-full bg-success" /> {p.health}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </GlassCard>
+                </li>
+              ))}
+            </ul>
+          </GlassCard>
 
-        <GlassCard>
-          <div className="mb-4 flex items-center justify-between">
-            <div className="text-xl font-semibold">AI suggestions</div>
-            <Sparkles className="h-4 w-4 text-cyan-glow" />
-          </div>
-          <ul className="space-y-3 text-sm">
-            {[
-              "Refactor Orbit CRM auth into a shared session hook.",
-              "Halo Editor onboarding needs a shorter first-run.",
-              "Northwind: your API p95 spiked 18% Thursday — investigate.",
-            ].map((s) => (
-              <li
-                key={s}
-                className="group flex gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-3 transition-colors hover:bg-white/[0.05]"
-              >
-                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-r from-primary to-cyan-glow" />
-                <span className="text-muted-foreground group-hover:text-foreground">
-                  {s}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </GlassCard>
+          {/* AI Activity Feed */}
+          <GlassCard hover={false}>
+            <h2 className="text-sm font-semibold text-foreground mb-3">Recent AI Activity</h2>
+            <ul className="space-y-2.5" role="list" aria-label="Recent AI activity feed">
+              {[
+                { action: "Generated luxury SaaS landing page", time: "2m ago", type: "code" },
+                { action: "Analyzed stripe.com design patterns", time: "18m ago", type: "vision" },
+                { action: "Pushed 14 files to GitHub branch", time: "1h ago", type: "git" },
+                { action: "Deployed Orbit CRM to Vercel", time: "3h ago", type: "deploy" },
+              ].map((item, i) => (
+                <motion.li
+                  key={item.action}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: 0.3 + i * 0.06 }}
+                  className="flex items-start gap-2.5"
+                >
+                  <div className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-purple-400/60" aria-hidden />
+                  <div className="min-w-0">
+                    <p className="text-xs text-foreground leading-tight">{item.action}</p>
+                    <p className="text-[10px] text-muted-foreground/60 mt-0.5">{item.time}</p>
+                  </div>
+                </motion.li>
+              ))}
+            </ul>
+          </GlassCard>
+        </div>
       </div>
 
-      {/* Quick actions */}
-      <div className="mt-6">
-        <GlassCard>
-          <div className="mb-4 text-xl font-semibold">Quick actions</div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {quickActions.map((a) => (
-              <Link
-                key={a.label}
-                to={a.to}
-                className="group flex flex-col items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.02] p-4 transition-all hover:border-primary/40 hover:bg-white/[0.05]"
-              >
-                <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary/30 to-secondary/20 ring-1 ring-white/10 transition-transform group-hover:scale-110">
-                  <a.icon className="h-4 w-4 text-cyan-glow" />
-                </div>
-                <div className="text-sm font-medium">{a.label}</div>
-              </Link>
-            ))}
-          </div>
-        </GlassCard>
-      </div>
-    </div>
+      {/* Keyboard Shortcuts Modal */}
+      <KeyboardShortcutsModal open={showShortcuts} onClose={() => setShowShortcuts(false)} />
+    </PageContainer>
   );
 }

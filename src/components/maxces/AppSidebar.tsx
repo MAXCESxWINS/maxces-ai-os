@@ -18,6 +18,8 @@ import {
   UserRound,
   Sparkles,
   Command,
+  Github,
+  Rocket,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -43,6 +45,8 @@ const sections: {
       { to: "/code-builder", label: "Code Builder", icon: Code2 },
       { to: "/website-review", label: "Website Review", icon: Globe },
       { to: "/ui-review", label: "UI Review", icon: Palette },
+      { to: "/github", label: "GitHub Push", icon: Github },
+      { to: "/deploy", label: "Deploy", icon: Rocket },
     ],
   },
   {

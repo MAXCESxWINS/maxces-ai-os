@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Line, LineChart, CartesianGrid } from "recharts";
 import { GlassCard } from "@/components/maxces/GlassCard";
 import { TopBar } from "@/components/maxces/TopBar";
-import { ArrowDown, ArrowUp, Lightbulb, Target, TrendingUp } from "lucide-react";
+import { ArrowDown, ArrowUp, Lightbulb, Target, TrendingUp, Lock } from "lucide-react";
+import { PageContainer } from "@/components/maxces/Primitives";
 
 export const Route = createFileRoute("/_app/business")({
   head: () => ({ meta: [{ title: "MAXCES · Business" }] }),
@@ -31,8 +32,24 @@ const ideas = [
 
 function BusinessPage() {
   return (
-    <div>
+    <PageContainer>
       <TopBar title="Business" subtitle="Your operating picture" />
+
+      {/* Closed Beta Banner */}
+      <GlassCard className="border border-purple-500/20 bg-purple-500/5 mb-6 p-4" hover={false}>
+        <div className="flex items-start gap-3">
+          <div className="h-5 w-5 rounded bg-purple-500/10 flex items-center justify-center text-purple-400 shrink-0 mt-0.5">
+            <Lock className="h-3 w-3" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-foreground">Closed Beta Preview</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
+              Business intelligence indicators, charts, and metrics are currently generated from simulated startup financial datasets. 
+              Full integration with Stripe and database billing schemas will be available in a future Beta update.
+            </p>
+          </div>
+        </div>
+      </GlassCard>
 
       <div className="grid gap-4 sm:grid-cols-4">
         {[
@@ -114,6 +131,6 @@ function BusinessPage() {
           </ul>
         </GlassCard>
       </div>
-    </div>
+    </PageContainer>
   );
 }
