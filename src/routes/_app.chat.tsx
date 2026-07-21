@@ -198,9 +198,6 @@ function ChatPage() {
               <div>
                 <div className="text-sm font-semibold flex items-center gap-2">
                   <span>Cortex Intelligence Engine</span>
-                  <span className="rounded-full bg-purple-500/20 border border-purple-500/30 px-2 py-0.5 text-[10px] text-purple-300">
-                    Gemini 2.5 Flash
-                  </span>
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_var(--emerald-400)]" />

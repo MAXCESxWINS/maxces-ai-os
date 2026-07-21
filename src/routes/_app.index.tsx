@@ -29,6 +29,7 @@ import { GlassCard } from "@/components/maxces/GlassCard";
 import { TopBar } from "@/components/maxces/TopBar";
 import { OnboardingBanner, KeyboardShortcutsModal, StatusDot, PageContainer } from "@/components/maxces/Primitives";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/_app/")({
   head: () => ({
@@ -44,21 +45,14 @@ export const Route = createFileRoute("/_app/")({
   component: DashboardPage,
 });
 
-const stats = [
-  { label: "Active Projects", value: "14", delta: "+3 this week", icon: Rocket, tone: "primary" as const },
-  { label: "Tasks Today", value: "9", delta: "6 done", icon: CheckCircle2, tone: "success" as const },
-  { label: "AI Requests", value: "2,481", delta: "+18%", icon: Sparkles, tone: "cyan" as const },
-  { label: "Focus Score", value: "94", delta: "+6 pts", icon: TrendingUp, tone: "warning" as const },
-];
-
 const productivity = [
-  { d: "Mon", v: 42 },
-  { d: "Tue", v: 55 },
-  { d: "Wed", v: 61 },
-  { d: "Thu", v: 48 },
-  { d: "Fri", v: 78 },
-  { d: "Sat", v: 66 },
-  { d: "Sun", v: 84 },
+  { d: "Mon", v: 0 },
+  { d: "Tue", v: 0 },
+  { d: "Wed", v: 0 },
+  { d: "Thu", v: 0 },
+  { d: "Fri", v: 0 },
+  { d: "Sat", v: 0 },
+  { d: "Sun", v: 0 },
 ];
 
 const projects = [
@@ -96,6 +90,63 @@ export function DashboardPage() {
   const { user } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [projectCount, setProjectCount] = useState<number | null>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchStats = async () => {
+      try {
+        const { count, error } = await supabase
+          .from("workspace_files")
+          .select("*", { count: "exact", head: true });
+
+        if (error) throw error;
+
+        const totalFiles = count || 0;
+        setProjectCount(totalFiles > 0 ? 1 : 0);
+      } catch (err) {
+        console.warn("Failed to load workspace stats:", err);
+        setProjectCount(0);
+      } finally {
+        setIsLoadingStats(false);
+      }
+    };
+
+    fetchStats();
+  }, [user?.id]);
+
+  const stats = [
+    {
+      label: "Active Projects",
+      value: projectCount === null ? "..." : String(projectCount),
+      delta: projectCount === 0 ? "0 this week" : "+1 this week",
+      icon: Rocket,
+      tone: "primary" as const,
+    },
+    {
+      label: "Tasks Today",
+      value: projectCount === 0 ? "0" : "9",
+      delta: projectCount === 0 ? "0 done" : "6 done",
+      icon: CheckCircle2,
+      tone: "success" as const,
+    },
+    {
+      label: "AI Requests",
+      value: projectCount === 0 ? "0" : "2,481",
+      delta: projectCount === 0 ? "0%" : "+18%",
+      icon: Sparkles,
+      tone: "cyan" as const,
+    },
+    {
+      label: "Focus Score",
+      value: projectCount === 0 ? "0" : "94",
+      delta: projectCount === 0 ? "0 pts" : "+6 pts",
+      icon: TrendingUp,
+      tone: "warning" as const,
+    },
+  ];
 
   const displayName =
     (user as { user_metadata?: { full_name?: string; name?: string } })?.user_metadata?.full_name ||
@@ -253,55 +304,71 @@ export function DashboardPage() {
                 View all <ArrowUpRight className="h-3 w-3" aria-hidden />
               </Link>
             </div>
-            <ul className="space-y-3" role="list">
-              {projects.map((p) => (
-                <li key={p.name} className="flex items-center gap-3">
-                  <StatusDot color={statusColors[p.status]} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-medium text-foreground truncate">{p.name}</span>
-                      <span className="text-[10px] text-muted-foreground shrink-0 ml-2">{p.progress}%</span>
+            {projectCount === 0 ? (
+              <div className="flex flex-col items-center justify-center py-6 text-center border border-white/5 bg-white/[0.01] rounded-2xl p-4">
+                <Rocket className="h-8 w-8 mb-2 text-purple-400/40" />
+                <p className="text-xs font-semibold text-foreground/80">No active projects</p>
+                <p className="text-[10px] text-muted-foreground/60 max-w-[200px] mt-1 leading-relaxed">
+                  Start by using <Link to="/code-builder" className="text-purple-400 hover:underline">Code Builder</Link> to generate files.
+                </p>
+              </div>
+            ) : (
+              <ul className="space-y-3" role="list">
+                {projects.map((p) => (
+                  <li key={p.name} className="flex items-center gap-3">
+                    <StatusDot color={statusColors[p.status]} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-foreground truncate">{p.name}</span>
+                        <span className="text-[10px] text-muted-foreground shrink-0 ml-2">{p.progress}%</span>
+                      </div>
+                      <div className="h-1 rounded-full bg-white/8 overflow-hidden" role="progressbar" aria-valuenow={p.progress} aria-valuemin={0} aria-valuemax={100} aria-label={`${p.name} progress`}>
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${p.progress}%` }}
+                          transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                          className={`h-full rounded-full ${p.progress === 100 ? "bg-emerald-400" : "bg-gradient-to-r from-purple-500 to-cyan-400"}`}
+                        />
+                      </div>
+                      <span className="text-[9px] text-muted-foreground/60 mt-0.5 block">{p.lang}</span>
                     </div>
-                    <div className="h-1 rounded-full bg-white/8 overflow-hidden" role="progressbar" aria-valuenow={p.progress} aria-valuemin={0} aria-valuemax={100} aria-label={`${p.name} progress`}>
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${p.progress}%` }}
-                        transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                        className={`h-full rounded-full ${p.progress === 100 ? "bg-emerald-400" : "bg-gradient-to-r from-purple-500 to-cyan-400"}`}
-                      />
-                    </div>
-                    <span className="text-[9px] text-muted-foreground/60 mt-0.5 block">{p.lang}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
+                  </li>
+                ))}
+              </ul>
+            )}
           </GlassCard>
 
           {/* AI Activity Feed */}
           <GlassCard hover={false}>
             <h2 className="text-sm font-semibold text-foreground mb-3">Recent AI Activity</h2>
-            <ul className="space-y-2.5" role="list" aria-label="Recent AI activity feed">
-              {[
-                { action: "Generated luxury SaaS landing page", time: "2m ago", type: "code" },
-                { action: "Analyzed stripe.com design patterns", time: "18m ago", type: "vision" },
-                { action: "Pushed 14 files to GitHub branch", time: "1h ago", type: "git" },
-                { action: "Deployed Orbit CRM to Vercel", time: "3h ago", type: "deploy" },
-              ].map((item, i) => (
-                <motion.li
-                  key={item.action}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: 0.3 + i * 0.06 }}
-                  className="flex items-start gap-2.5"
-                >
-                  <div className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-purple-400/60" aria-hidden />
-                  <div className="min-w-0">
-                    <p className="text-xs text-foreground leading-tight">{item.action}</p>
-                    <p className="text-[10px] text-muted-foreground/60 mt-0.5">{item.time}</p>
-                  </div>
-                </motion.li>
-              ))}
-            </ul>
+            {projectCount === 0 ? (
+              <div className="py-6 text-center text-[10px] text-muted-foreground/45 border border-white/5 bg-white/[0.01] rounded-2xl">
+                No recent activity. Start by prompting inside Chat.
+              </div>
+            ) : (
+              <ul className="space-y-2.5" role="list" aria-label="Recent AI activity feed">
+                {[
+                  { action: "Generated luxury SaaS landing page", time: "2m ago", type: "code" },
+                  { action: "Analyzed stripe.com design patterns", time: "18m ago", type: "vision" },
+                  { action: "Pushed 14 files to GitHub branch", time: "1h ago", type: "git" },
+                  { action: "Deployed Orbit CRM to Vercel", time: "3h ago", type: "deploy" },
+                ].map((item, i) => (
+                  <motion.li
+                    key={item.action}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: 0.3 + i * 0.06 }}
+                    className="flex items-start gap-2.5"
+                  >
+                    <div className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-purple-400/60" aria-hidden />
+                    <div className="min-w-0">
+                      <p className="text-xs text-foreground leading-tight">{item.action}</p>
+                      <p className="text-[10px] text-muted-foreground/60 mt-0.5">{item.time}</p>
+                    </div>
+                  </motion.li>
+                ))}
+              </ul>
+            )}
           </GlassCard>
         </div>
       </div>
